@@ -1,9 +1,33 @@
 #!/bin/bash
 
-- [Windows-10-22h2_x64_en-us.iso](https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66750/19045.2006.220908-0225.22h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso)
-- [windows_server_2016_14393.0_eval_x64.iso](https://software-download.microsoft.com/download/pr/Windows_Server_2016_Datacenter_EVAL_en-us_14393_refresh.ISO)
-- [windows_server2019_x64FREE_en-us.iso](https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/17763.3650.221105-1748.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso)
+declare -A urls
+declare -A names
 
-wget -nc -O "$pfsense_iso_path.gz" "$pfsense_iso_url"
+while IFS='=' read -r key value; do
+    key=$(echo "$key" | tr -d '[:space:]')
+    value=$(echo "$value" | tr -d '[:space:]')
+    case $key in
+        WIN_10_NAME|WIN_SRV_2016_NAME|WIN_SRV_2019_NAME|PFSENSE_ISO_NAME)
+            names[$key]=$value
+            ;;
+        WIN_10_URL|WIN_SRV_2016_URL|WIN_SRV_2019_URL|PFSENSE_ISO_URL)
+            urls[$key]=$value
+            ;;
+    esac
+done < goad.conf
 
-wget -nc -O /var/lib/vz/template/iso/pfSense-CE-2.7.2-RELEASE-amd64.iso.gz https://repo.ialab.dsu.edu/pfsense/pfSense-CE-2.7.2-RELEASE-amd64.iso.gz
+for key in "${!names[@]}"; do
+    name=${names[$key]}
+    url_key=${key/_NAME/_URL}
+    url=${urls[$url_key]}
+    wget -nc -O /var/lib/vz/template/iso/$name $url
+done
+
+if [ -n "${urls[PFSENSE_ISO_URL]}" ]; then
+    gz_path="/var/lib/vz/template/iso/${names[PFSENSE_ISO_NAME]}"
+    iso_path="${gz_path%.gz}"  # Remove .gz extension for the ISO file path
+    wget -nc -O "$gz_path" ${urls[PFSENSE_ISO_URL]}
+    if [ ! -f "$iso_path" ]; then
+        gzip -d "$gz_path"
+    fi
+fi

@@ -9,7 +9,7 @@ admin_servers:
       ansible_python_interpreter: /usr/local/bin/python3.11
       ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
       new_pfs_pwd: pfsense30*#
-      new_pfs_pwd_hash: $2y$10$25ajN/HMymWtKOHnw1inZe53sc32p9C/FLZc81bFVM76/I0G61D6y
+      new_pfs_pwd_hash: $2y$10$YgwbVRTFdLBYJbCwvitoBep3KTLqyK.fjf.If193nf6zgOtbb.2vW
       whitelist_ssh_network: 192.168.2.1/32
       PM_DOMAIN: "myusti.fr"
       PM_DNS_HOSTNAME: "one.one.one.one"
@@ -34,8 +34,8 @@ admin_servers:
       PFS_LAN_GATEWAY: 10.0.0.2
       VLAN10_ID: 10
       VLAN20_ID: 20
-      VLAN10_DESC: "VLAN_10"
-      VLAN20_DESC: "VLAN_20"
+      VLAN10_DESC: VLAN_10
+      VLAN20_DESC: VLAN_20
       VLAN10_NETWORK: 192.168.10.0/24
       VLAN20_NETWORK: 192.168.20.0/24
       VLANTAG10NAME: VLAN_10

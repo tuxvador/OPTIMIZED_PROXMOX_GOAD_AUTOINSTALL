@@ -1,7 +1,7 @@
 pm_api = {
-  url          = "https://192.168.1.68:8006/api2/json"
+  url          = "PROXM_API_URL"
   token_id     = "terraform@pve!terratoken"
-  token_secret = "3fb32c98-003a-428a-bb4e-feb069e63306"
+  token_secret = "9c2f97a9-d817-4bbf-b4ee-33a897b6f1bf"
 }
 
 pools = {
@@ -26,6 +26,6 @@ provisioning = {
   gateway       = "192.168.2.2"
   private_key   = "ssh/provisioning_id_rsa"
   public_key    = "ssh/provisioning_id_rsa.pub"
-  root_password = "Uu3CohkooKai6fee"
+  root_password = "osha2Aefiech4aex"
   vlanid        = "10"
 }

@@ -1,8 +1,10 @@
 #!/bin/bash
 
+set -e
+
 # Function to print section headers
 print_header() {
-    echo "********************************************************************************************"
+    echo -e "\n********************************************************************************************"
     echo "$1"
     echo "********************************************************************************************"
 }
@@ -17,16 +19,12 @@ create_pools() {
 
     for pool in "${pools[@]}"; do
         local key=${pool%%:*}
-        local var_name=${pool#*:}
-        var_name=${var_name%%:*}
-        local comment=${pool##*:}
-
-        local pool_id=$(grep "$key" goad.conf | cut -d '=' -f2 | tr -d '[:space:]')
+        local pool_id
+        pool_id=$(grep "$key" goad.conf | cut -d '=' -f2 | tr -d '[:space:]')
 
         if [ -n "$pool_id" ]; then
-            # Check if the pool already exists
             if ! pvesh get /pools --poolid "$pool_id" &> /dev/null; then
-                pvesh create /pools --poolid "$pool_id" --comment "$comment" || {
+                pvesh create /pools --poolid "$pool_id" --comment "${pool##*:}" || {
                     echo "Failed to create pool $pool_id"
                     exit 1
                 }
@@ -40,13 +38,9 @@ create_pools() {
     done
 }
 
-
 # Function to check if a file exists
 check_file_exists() {
-    if [ ! -f "$1" ]; then
-        echo "File '$1' not found!"
-        exit 1
-    fi
+    [ -f "$1" ] || { echo "File '$1' not found!"; exit 1; }
 }
 
 # Function to extract values from goad.conf
@@ -56,8 +50,7 @@ extract_value() {
 
 # Function to generate SSH keys
 generate_ssh_keys() {
-    local key_name=$1
-    ssh-keygen -q -t rsa -b 4096 -N "" -f "ssh/$key_name" <<< "y"
+    ssh-keygen -q -t rsa -b 4096 -N "" -f "ssh/$1" <<< "y"
 }
 
 # Function to transform values for use in pfSense script
@@ -67,26 +60,7 @@ transform_value() {
 
 # Function to update goad.conf
 update_goad_conf() {
-    local key=$1
-    local value=$2
-    sed -i "s|.*${key}=.*|${key}=${value}|" goad.conf
-}
-
-# Function to download and setup pfSense ISO
-setup_pfsense_iso() {
-    local pfsense_iso_url="https://atxfiles.netgate.com/mirror/downloads/pfSense-CE-2.7.2-RELEASE-amd64.iso.gz"
-    local pfsense_iso_path="/var/lib/vz/template/iso/pfSense-CE-2.7.2-RELEASE-amd64.iso"
-
-    wget -nc -O "$pfsense_iso_path.gz" "$pfsense_iso_url"
-
-    if [ ! -f "$pfsense_iso_path" ]; then
-        gzip -d "$pfsense_iso_path.gz"
-    else
-        echo "File $pfsense_iso_path already exists. Decompression skipped."
-    fi
-
-    local pfs_iso=$(basename "$pfsense_iso_path")
-    update_goad_conf "PFS_ISO" "local:iso/$pfs_iso"
+    sed -i "s|.*${1}=.*|${1}=${2}|" goad.conf
 }
 
 # Function to create Terraform user, role, and API access token
@@ -97,7 +71,8 @@ create_terraform_user_and_token() {
     local trf_token_name=$(extract_value "PROXM_TRF_TOKEN_NAME")
 
     pveum user add "$trf_user@pve" --password "$trf_usr_pwd"
-    local trf_token_value=$(pvesh create /access/users/"$trf_user@pve"/token/"$trf_token_name" --expire 0 --privsep 0 --output-format json | jq -r '.value')
+    local trf_token_value
+    trf_token_value=$(pvesh create /access/users/"$trf_user@pve"/token/"$trf_token_name" --expire 0 --privsep 0 --output-format json | jq -r '.value')
 
     update_goad_conf "PROXM_TRF_USR_PWD" "$(pwgen -c 16 -n 1)"
     update_goad_conf "PROXM_TRF_TOKEN_VALUE" "$trf_token_value"
@@ -160,9 +135,7 @@ EOF
 
 # Function to update Ansible inventory
 update_inventory() {
-    local key=$1
-    local value=$(extract_value "$key")
-    sed -i "s|\($2:\s*\).*|\1$(escape_for_sed "$value")|" modules/pfsense/scripts/ansible/inventory.yml
+    sed -i "s|\($2:\s*\).*|\1$(escape_for_sed "$(extract_value "$1")")|" modules/pfsense/scripts/ansible/inventory.yml
 }
 
 # Function to escape values for sed
@@ -188,16 +161,14 @@ update_pfsense_script() {
     )
 
     for key in "${keys[@]}"; do
-        local config_key=${key%%:*}
-        local script_key=${key##*:}
-        local value=$(transform_value "$(extract_value "$config_key")")
-
-        sed -i "s|${script_key}|${value}|g" modules/pfsense/scripts/pfsense.sh
+        sed -i "s|${key##*:}|$(transform_value "$(extract_value "${key%%:*}")")|g" modules/pfsense/scripts/pfsense.sh
     done
 }
 
-# Main script execution starts here
+print_header "Destroy before install"
+bash install/destroy.sh
 
+# Main script execution starts here
 print_header "Create pools on Proxmox"
 create_pools
 
@@ -207,7 +178,7 @@ check_file_exists modules/pfsense/scripts/ansible/inventory.yml
 cp /etc/network/interfaces /etc/network/interfaces.back
 
 print_header "Create Config"
-pmurl="PROXM_API_URL=https://$(ip addr show vmbr0 | grep 'inet ' | cut -d ' ' -f 6 | cut -d/ -f 1):8006/api2/json"
+pmurl="PROXM_API_URL=https://$(ip addr show vmbr0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f 1):8006/api2/json"
 update_goad_conf "PROXM_API_URL" "$pmurl"
 
 pfpwd=$(extract_value "PFS_PWD")
@@ -219,8 +190,8 @@ generate_ssh_keys pfsense_id_rsa
 update_goad_conf "PFS_HASH" "$pfpwdhash"
 update_goad_conf "PROV_PASSWORD" "$prov_passwd"
 
-print_header "Download and Setup pfSense ISO"
-setup_pfsense_iso
+print_header "Download ISOS"
+bash install/download_isos.sh
 
 print_header "Create Terraform User, Role, and API Access Token"
 create_terraform_user_and_token
