@@ -178,7 +178,9 @@ check_file_exists modules/pfsense/scripts/ansible/inventory.yml
 cp /etc/network/interfaces /etc/network/interfaces.back
 
 print_header "Create Config"
-pmurl=pmurl=$(echo 'PROXM_API_URL=https://'$(ip addr show vmbr0 | grep 'inet ' |cut -d ' ' -f 6|cut -d/ -f 1)':8006/api2/json');sed -i "s#PROXM_API_URL=.*#$pmurl#g" goad.conf
+apiurl=$(echo 'PROXM_API_URL=https://'$(ip addr show vmbr0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1)':8006/api2/json'); sed -i "s#PROXM_API_URL=.*#$apiurl#g" goad.conf
+pmurl=$(grep "PROXM_API_URL" goad.conf | cut -d '=' -f2 | tr -d '[:space:]')
+
 update_goad_conf "PROXM_API_URL" "$pmurl"
 
 pfpwd=$(extract_value "PFS_PWD")
