@@ -24,7 +24,6 @@ module "pfsense" {
     iso          = var.pfsense.iso
     vmid         = var.pfsense.vmid
   }
-  depends_on = [module.cpool, module.dpool]
 }
 
 module "provisioning" {
