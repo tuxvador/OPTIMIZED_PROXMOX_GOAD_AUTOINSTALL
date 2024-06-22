@@ -14,26 +14,6 @@ provider "proxmox" {
 #   source = "./modules/iso_download/"
 # }
 
-#create Admin pool in proxmox
-module "cpool" {
-  source = "./modules/create_pool/"
-  pools = {
-    admin_pool    = var.pools.admin_pool
-    template_pool = var.pools.template_pool
-    goad_pool     = var.pools.goad_pool
-  }
-}
-
-#delete ADMIN pool in proxmox
-module "dpool" {
-  source = "./modules/delete_pool/"
-  pools = {
-    admin_pool    = var.pools.admin_pool
-    template_pool = var.pools.template_pool
-    goad_pool     = var.pools.goad_pool
-  }
-}
-
 #create PFSENS VM
 module "pfsense" {
   source = "./modules/pfsense/"
