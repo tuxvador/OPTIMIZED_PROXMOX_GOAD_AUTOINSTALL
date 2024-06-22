@@ -9,7 +9,7 @@ admin_servers:
       ansible_python_interpreter: /usr/local/bin/python3.11
       ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
       new_pfs_pwd: pfsense30*#
-      new_pfs_pwd_hash: $2y$10$8iiy.KmPnXvEERRT5H/cN.71Z9ApyWAGPK1HF10bW1XyjS4a1i0OK
+      new_pfs_pwd_hash: $2y$10$Uu6M/WiAwaXQ5xnhtiqnN.k7YWNBFTAL5UJ56e0zvUzsMdG5GbF3O
       whitelist_ssh_network: 192.168.2.1/32
       PM_DOMAIN: "myusti.fr"
       PM_DNS_HOSTNAME: "one.one.one.one"
