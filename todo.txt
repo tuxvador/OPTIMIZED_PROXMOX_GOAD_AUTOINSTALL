@@ -8,3 +8,9 @@
 - change goad user password in pfsense ansible playbook to make it interactive
 - Run the script with no iso download and template creation to determine the full install time depending on bandwith
 - edit bash modules/provisioning/scripts/destroy.sh to automaticaly generate the node name
+
+
+allow recursive dns for host resolution to pass throught 10.0.0.2
+- add rule allow udp 53 on wan
+- add wan networl to DNS resolver acces list to authorise recursive dns
+- disable network traffic from vlan10 to outside
