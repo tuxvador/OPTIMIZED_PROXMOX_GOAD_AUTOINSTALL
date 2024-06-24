@@ -1,7 +1,7 @@
 pm_api = {
   url          = "https://192.168.1.68:8006/api2/json"
-  token_id     = "dev@pve!devtoken"
-  token_secret = "2ce0a460-58e6-4f22-b0f4-e77093fd3589"
+  token_id     = "terraform@pve!terratoken"
+  token_secret = "e5c82469-3632-4f28-901a-353f702aef47"
 }
 
 pools = {
