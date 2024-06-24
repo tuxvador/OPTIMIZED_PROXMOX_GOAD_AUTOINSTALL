@@ -165,7 +165,7 @@ update_pfsense_script() {
     done
 }
 
-print_header "Destroy before install"
+print_header "Destroy before LAB before create if any present"
 bash install/destroy.sh
 
 # Main script execution starts here
@@ -191,9 +191,6 @@ generate_ssh_keys pfsense_id_rsa
 
 update_goad_conf "PFS_HASH" "$pfpwdhash"
 update_goad_conf "PROV_PASSWORD" "$prov_passwd"
-
-print_header "Destroy before LAB before create if any present"
-bash install/destroy.sh
 
 print_header "Download ISOS"
 bash install/download_isos.sh
