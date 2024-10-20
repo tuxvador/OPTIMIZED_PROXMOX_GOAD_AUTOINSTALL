@@ -13,6 +13,8 @@ resource "proxmox_lxc" "goad_provisioning" {
   unprivileged    = true
   ssh_public_keys = file(var.provisioning.public_key)
 
+  nameserver = "192.168.2.2"
+
   rootfs {
     storage = "local-lvm"
     size    = "20G"
@@ -33,6 +35,11 @@ resource "proxmox_lxc" "goad_provisioning" {
     timeout     = "5m"
   }
 
+  provisioner "local-exec" {
+    command = "pvesh set /nodes/windows-perso/dns -search myusti.fr -dns1 192.168.2.2 -dns2 10.0.0.2 -dns3 192.168.1.254"
+  }
+
+
   provisioner "remote-exec" {
     script = "modules/provisioning/scripts/post-install.sh"
   }
@@ -42,8 +49,17 @@ resource "proxmox_lxc" "goad_provisioning" {
     destination = "/root/GIT/GOAD/packer/proxmox/config.auto.pkrvars.hcl"
   }
 
+  provisioner "file" {
+    source      = "files/packer.json.pkr.hcl"
+    destination = "/root/GIT/GOAD/packer/proxmox/packer.json.pkr.hcl"
+  }
+
   provisioner "remote-exec" {
     script = "modules/provisioning/scripts/packer-templating.sh"
+  }
+
+  provisioner "local-exec" {
+    command = "sleep 1000"
   }
 
   provisioner "local-exec" {

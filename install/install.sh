@@ -1,5 +1,9 @@
 #!/bin/bash
 
+###
+pvesh set /nodes/windows-perso/dns -search myusti.fr -dns1 8.8.8.8 -dns2 192.168.2.2 -dns3 10.0.0.2
+###
+
 set -e
 
 # Function to print section headers
@@ -258,8 +262,13 @@ print_header "Modify pfSense Script with Content from goad.conf"
 update_pfsense_script
 
 print_header "Install and Auto-Configure pfSense VM"
+sleep 3 #To fix error downloading telmat proxmox
 terraform init
 terraform apply -var-file="files/dev.tfvars" --auto-approve
+
+####
+pvesh set /nodes/windows-perso/dns -search myusti.fr -dns1 192.168.2.2 -dns2 10.0.0.2 -dns3 192.168.1.254
+####
 
 print_header "Provisioning"
 # Add provisioning commands here

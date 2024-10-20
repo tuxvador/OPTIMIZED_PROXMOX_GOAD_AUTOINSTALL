@@ -1,6 +1,6 @@
 proxmox_url             = "https://192.168.1.68:8006/api2/json"
 proxmox_username        = "terraform@pve!terratoken"
-proxmox_token           = "e5c82469-3632-4f28-901a-353f702aef47"
+proxmox_token           = "e5be47e8-308c-413c-a3b8-ac2b722d64af"
 proxmox_skip_tls_verify = "true"
 proxmox_node            = "windows-perso"
 proxmox_pool            = "TEMPLATE"

@@ -5,7 +5,8 @@ cd /root/GIT/GOAD/packer/proxmox/
 sed -i 's/proxmox_password/proxmox_token/g' variables.pkr.hcl
 sed -i 's/password\s*=\s*"\${var\.proxmox_password}"/token                = "${var.proxmox_token}"/g' packer.json.pkr.hcl
 grep -rl 'vm_disk_format\s*=\cd /root/GIT/GOAD/packer/proxmox/s*"qcow2"' ./ | xargs sed -i 's/vm_disk_format\s*=\s*"qcow2"/vm_disk_format = "raw"/g'
-grep -rl 'qcow2' ./ | xargs sed -i 's/qcow2/raw-lvm-thin/g'
+# grep -rl 'qcow2' ./ | xargs sed -i 's/qcow2/raw-lvm-thin/g'
+grep -rl 'qcow2' ./ | xargs sed -i 's/qcow2/raw/g'
 
 sed -i '/variable "vm_name" {}/a variable "vm_id" {}' variables.pkr.hcl
 
@@ -61,15 +62,24 @@ check_and_build() {
   VM_ID=$(sed -n 's/.*vm_id *\= *\([0-9]*\).*/\1/p' "${file}")
 
   # Check if VM exists
-  VM_EXISTS=$(curl -s -k -H "Authorization: ${API_TOKEN_HEADER}" \
-    "${PROXMOX_URL}/nodes/${PROXMOX_NODE}/qemu/${VM_ID}" | jq '.data != null')
+  VM_LIST=$(curl -s -k -H "Authorization: ${API_TOKEN_HEADER}" \
+  "${PROXMOX_URL}/nodes/${PROXMOX_NODE}/qemu" | jq '.data[].vmid')
+
+  if echo "$VM_LIST" | grep -qw "$VM_ID"; then
+    VM_EXISTS=true
+  else
+    VM_EXISTS=false
+  fi
+
+  # VM_EXISTS=$(curl -s -k -H "Authorization: ${API_TOKEN_HEADER}" \
+  #   "${PROXMOX_URL}/nodes/${PROXMOX_NODE}/qemu/${VM_ID}" | jq '.data != null')
 
   # If VM exists, exit the script, otherwise proceed with the build
   if [ "$VM_EXISTS" = "true" ]; then
     echo "VM ${VM_ID} already exists. Skipping build."
   else
     echo "VM ${VM_ID} does not exist. Proceeding with build."
-    packer validate -var-file="${file}"
+    packer validate -var-file="${file}" .
     packer build -var-file="${file}" .
   fi
 }

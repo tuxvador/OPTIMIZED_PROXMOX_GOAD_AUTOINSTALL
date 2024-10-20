@@ -90,6 +90,13 @@ resource "proxmox_vm_qemu" "pfsense_install" {
   }
 
   provisioner "remote-exec" {
+    connection {
+    type     = "ssh"
+    user     = "admin"
+    password = var.pfsense.new_password
+    host     = var.pfsense.ip
+    }
+
     inline = [
       "/etc/rc.reload_all",
     ]

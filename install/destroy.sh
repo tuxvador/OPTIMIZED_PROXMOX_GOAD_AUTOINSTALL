@@ -1,5 +1,14 @@
 #!/bin/bash
 
+rm -rf .terraform/
+rm .terraform.lock
+rm .terraform.lock.hcl
+rm terraform.tfstate
+rm .terraform.tfstate.lock.info
+
+sudo iptables -t nat -F
+sudo iptables -t nat -X
+
 # Function to remove SSH host keys if they exist
 remove_ssh_host_keys() {
     local hosts=("provisioning" "10.0.0.2" "192.168.2.2")
@@ -93,6 +102,7 @@ delete_proxmox_pools() {
         fi
     done
 }
+
 
 # Main script execution starts here
 remove_ssh_host_keys
