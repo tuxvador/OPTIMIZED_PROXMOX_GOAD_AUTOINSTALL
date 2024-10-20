@@ -59,10 +59,6 @@ resource "proxmox_lxc" "goad_provisioning" {
   }
 
   provisioner "local-exec" {
-    command = "sleep 1000"
-  }
-
-  provisioner "local-exec" {
     command = "scp -o StrictHostKeyChecking=no -i ${var.provisioning.private_key} root@provisioning:/root/GIT/GOAD/packer/proxmox/iso/scripts_withcloudinit.iso /var/lib/vz/template/iso/scripts_withcloudinit.iso"
   }
 

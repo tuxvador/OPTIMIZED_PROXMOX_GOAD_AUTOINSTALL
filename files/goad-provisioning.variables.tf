@@ -3,7 +3,7 @@ variable "pm_api_url" {
 }
 
 variable "pm_api_token" {
-  default = "terraform@pve!terratoken=a52ae096-f9f0-4a10-9dbd-4529a4da5826"
+  default = "terraform@pve!terratoken=168f0325-881c-4c58-b624-26b943a5ad68"
 }
 
 variable "pm_node" {
@@ -24,10 +24,8 @@ variable "vm_template_id" {
 
   # set the ids according to your templates
   default = {
-      "WinServer2019_x64"  = 102
-103
-104
-      "WinServer2016_x64"  = 105
+      "WinServer2019_x64"  = 953
+      "WinServer2016_x64"  = 952
       #"Windows10_22h2_x64" = 
   }
 }
